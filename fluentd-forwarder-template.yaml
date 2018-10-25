@@ -45,18 +45,7 @@ objects:
             value: ${P_TARGET_PORT}
           - name: ADDITIONAL_OPTS
             value: ${P_ADDITIONAL_OPTS}
-          - name: CA_PATH
-            value: ${P_CA_PATH}
-          - name: CERT_PATH
-            value: ${P_CERT_PATH}
-          - name: KEY_PATH
-            value: ${P_KEY_PATH}
-          - name: SHARED_KEY
-            value: ${P_SHARED_KEY}
           volumeMounts:
-          - mountPath: /secrets
-            name: fluentd-forwarder-secret-mount
-            readOnly: true
           - mountPath: /tmp/fluentd-config
             name: fluentd-forwarder-config
             readOnly: true
@@ -82,10 +71,6 @@ objects:
             successThreshold: 1
             timeoutSeconds: 5
         volumes:
-        - name: fluentd-forwarder-secret-mount
-          secret:
-            secretName: fluentd-forwarder-certs
-            defaultMode: 420
         - name: fluentd-forwarder-config
           configMap:
             name: fluentd-forwarder
@@ -121,16 +106,9 @@ objects:
         bind 0.0.0.0
         port 24284
 
-        shared_key ${SHARED_KEY}
+        secure           no
+        enable_strict_verification no
 
-        secure           ${IS_SECURE}
-        enable_strict_verification ${STRICT_VERIFICATION}
-
-        ca_cert_path     ${CA_PATH}
-        cert_path        ${CERT_PATH}
-        private_key_path ${KEY_PATH}
-
-        private_key_passphrase ${KEY_PASSPHRASE}
       </source>
 
       <filter **>
@@ -150,7 +128,7 @@ objects:
 parameters:
   - name: P_NAMESPACE
     description: Target namespace for image. Used to reference the ImageStream source for the image.
-    value: logging
+    value: openshift-logging
     required: true
   - name: P_IMAGE_NAME
     description: The name of the image to be used when performing the pull operation.
@@ -162,7 +140,7 @@ parameters:
   - name: P_TARGET_TYPE
     description: The output target's type. Can be 'remote_syslog' or 'splunk_ex'.
     required: true
-    value: remote_syslog
+    value: splunkhec
   - name: P_TARGET_HOST
     description: The remote host that is the target for the logging data.
     value: remote-syslog-host.lan
@@ -174,16 +152,3 @@ parameters:
   - name: P_ADDITIONAL_OPTS
     description: Additional options passed to the forwarder plugin. The normal value for splunk is output_format json.
     value: ""
-  - name: P_SHARED_KEY
-    description: "A key shared between the logging providers and this forwarder to ensure secure operation. Default: 'ocpaggregatedloggingsharedkey'."
-    value: ocpaggregatedloggingsharedkey
-    required: true
-  - name: P_CA_PATH
-    description: Path to the CA certificate required for certificate verification. By default it uses the OCP master's signing certificate.
-    value: /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
-  - name: P_CERT_PATH
-    description: Path to the certificate that should be used to identify the server. Defaults to the path outlined for secret mount.
-    value: /secrets/tls.crt
-  - name: P_KEY_PATH
-    description: Path to the key that should be used for the server PKI. Defaults the the path outlined for secret mount.
-    value: /secrets/tls.key

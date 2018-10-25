@@ -14,13 +14,8 @@ ENV HOME=/opt/app-root/src \
   TARGET_TYPE=remote_syslog \
   TARGET_HOST=localhost \
   TARGET_PORT=24284 \
-  IS_SECURE=yes \
-  STRICT_VERIFICATION=yes \
-  CA_PATH=/etc/pki/CA/certs/ca.crt \
-  CERT_PATH=/etc/pki/tls/certs/local.crt \
-  KEY_PATH=/etc/pki/tls/private/local.key \
-  KEY_PASSPHRASE= \
-  SHARED_KEY=ocpaggregatedloggingsharedkey
+  IS_SECURE=no \
+  STRICT_VERIFICATION=no \
 
 LABEL io.k8s.description="Fluentd container for collecting logs from other fluentd instances" \
   io.k8s.display-name="Fluentd Forwarder (${FLUENTD_VERSION})" \
